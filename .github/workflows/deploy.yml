@@ -23,7 +23,7 @@ jobs:
         USER: ${{ secrets.AWS_USER }}
       run: |
         ssh -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
-          # Nos movemos a la carpeta de tu proyecto en el servidor (ajusta la ruta si es diferente)
+          # Nos movemos a la carpeta de tu proyecto en el servidor
           cd ~/practica-aws/aws || cd ~/aws || cd ~
 
           # Traemos los últimos cambios de GitHub
