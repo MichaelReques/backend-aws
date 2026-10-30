@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres_db_service
+    restart: always
+    environment:
+      POSTGRES_DB: tienda_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_shared:/var/lib/postgresql/data
+    networks:
+      - red-app
+    profiles:
+      - local
+      - prod
+
+  backend-app:
+    build: .
+    container_name: spring_backend_prod
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/tienda_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - postgres-db
+    networks:
+      - red-app
+    profiles:
+      - prod
+
+volumes:
+  pgdata_shared:
+
+networks:
+  red-app:
+    driver: bridge

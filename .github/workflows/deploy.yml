@@ -1,0 +1,37 @@
+name: CI/CD Pipeline AWS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar llave SSH para conectar a AWS
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
+
+    - name: Ejecutar despliegue automático en el servidor AWS via SSH
+      env:
+        HOST: ${{ secrets.AWS_HOST }}
+        USER: ${{ secrets.AWS_USER }}
+      run: |
+        ssh -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
+          # Nos movemos a la carpeta de tu proyecto en el servidor (ajusta la ruta si es diferente)
+          cd ~/practica-aws/aws || cd ~/aws || cd ~
+
+          # Traemos los últimos cambios de GitHub
+          git pull origin main
+
+          # Apagamos los contenedores viejos sin borrar los datos de la BD
+          docker compose --profile prod down
+
+          # Reconstruimos la imagen y levantamos todo de nuevo con el perfil de producción
+          docker compose --profile prod up -d --build
+        EOF
